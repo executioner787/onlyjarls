@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+		body {
+			margin: 0;
+			background-color: #F5F5F5;
+			overflow: hidden;
+			font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
+		}
+		.main {
+			box-shadow: 0 0 900px -10px #B0B0FA;
+			background-color: white;
+			width:1000px;
+			height: 100vh;
+			margin:auto;
+			border-top: 1px solid #DDDDFF;
+			border-left: 3px solid #DDDDFF;
+		}
+		.button {
+			min-width: 300px;
+			background-color: white;
+			border: 2px solid purple;
+			margin: 7px;
+			padding: 3px 30px;
+			transition-duration: 0.4s;
+		}
+		.button:hover {
+			background-color: #E9B3F3;
+			cursor: pointer;
+		}
+		.checkbox_container {
+			display: block;
+			position: relative;
+			padding-left: 35px;
+			margin-bottom: 0px;
+			cursor: pointer;
+			width: 145px;
+		}
+		.checkbox_container input {
+			position: absolute;
+			opacity: 0;
+			cursor: pointer;
+			height: 0;
+			width: 0;
+		}
+		.checkmark {
+			position: absolute;
+		    top: 0;
+		    left: 10px;
+		    height: 20px;
+		    width: 20px;
+		    background-color: #F1F1FD;
+		}
+		.checkbox_container:hover input ~ .checkmark {
+		    background-color: #C1C1FD;
+		}
+		.checkbox_container input:checked ~ .checkmark {
+		    background-color: #5151AD;
+		}
+		.checkmark:after {
+		    content: "";
+		    position: absolute;
+		    display: none;
+		}
+		.checkbox_container input:checked ~ .checkmark:after {
+		    display: block;
+		}
+		.checkbox_container .checkmark:after {
+		    left: 7px;
+		    top: 2px;
+		    width: 7px;
+		    height: 15px;
+		    border: solid white;
+		    border-width: 0 3px 3px 0;
+		    -webkit-transform: rotate(45deg);
+		    -ms-transform: rotate(45deg);
+		    transform: rotate(45deg);
+		}
+		a {
+			color: inherit;
+			text-decoration: none;
+		}
+		input,select,textarea {
+			background-color: #F1F1FD;
+			border: none;
+			padding: 4px;
+			margin: 2px;
+		}
+		table {
+			text-align: left;
+			vertical-align: top;
+		}
+		.f_active {
+			transition-duration: 0.3s;
+			display: inline-block;
+			width:150px;
+			margin:0;
+			padding: 2px;
+			border-top: 1px solid #A1A1FD;
+			border-left: 1px solid #A1A1FD;
+			border-right: 1px solid #A1A1FD;
+			background-color: #F1F1FD;
+		}
+		.f_active:hover {
+			cursor: pointer;
+			display: inline-block;
+			width:150px;
+			margin:0;
+			padding: 2px;
+			border-top: 1px solid #A1A1FD;
+			border-left: 1px solid #A1A1FD;
+			border-right: 1px solid #A1A1FD;
+			background-color: #F1F1FD;
+		}
+		.f_dis {
+			display: inline-block;
+			width:150px;
+			margin:0;
+			padding: 2px;
+			border-bottom: 1px solid #A1A1FD;
+			background-color: white;
+		}
+		.f_dis:hover {
+			cursor: pointer;
+			display: inline-block;
+			width:150px;
+			margin:0;
+			padding: 2px;
+			border-bottom: 1px solid #A1A1FD;
+			background-color: #A1A1FD;
+		}
+	</style>
+    <title>2B Bot Control Panel</title>
+</head>
+
+<body>
+<script>
+	window.onload = function() {
+		document.getElementById("token").value = localStorage.getItem("token");
+		document.getElementById("right_side").style = localStorage.getItem("hintsCheck");
+	}
+	function encode() {
+		var obj = document.getElementById('encoder');
+		var unencoded = obj.value;
+		obj.value = encodeURIComponent(unencoded).replace(/'/g,"%27").replace(/"/g,"%22");	
+	}
+	function makeUrl() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/" + document.getElementById("message_type").value;
+		url+= "?chat_id=" + document.getElementById("chat_id").value;
+		switch(document.getElementById("message_type").value) {
+			case "sendMessage":
+				url+= "&text=" + encodeURIComponent(document.getElementById('message_body').value).replace(/'/g,"%27").replace(/"/g,"%22");	
+				break;
+			case "sendPhoto":
+				url+= "&photo=" + document.getElementById('message_body').value;
+				break;
+			case "sendAudio":
+				url+= "&audio=" + document.getElementById('message_body').value;
+				break;
+			case "sendDocument":
+				url+= "&document=" + document.getElementById('message_body').value;
+				break;
+			case "sendVideo":
+				url+= "&video=" + document.getElementById('message_body').value;
+				break;
+			case "sendAnimation":
+				url+= "&animation=" + document.getElementById('message_body').value;
+				break;
+			case "sendPoll":
+				url+= "&question=" + document.getElementById('message_body').value;
+				break;
+			case "sendSticker":
+				url+= "&sticker=" + document.getElementById('message_body').value;
+				break;
+			default:
+				url = "";
+				break;
+		}
+		if(document.getElementById("message_optional")){
+			switch(document.getElementById("message_type").value) {
+				case "sendPhoto":
+				case "sendAnimation":
+					url+= "&caption=" + encodeURIComponent(document.getElementById("message_optional").value).replace(/'/g,"%27").replace(/"/g,"%22");
+					break;
+				case "sendPoll":
+					url+= "&options=" + encodeURIComponent("[" + document.getElementById("message_optional").value + "]").replace(/'/g,"%27").replace(/"/g,"%22");
+					break;
+				default:
+					url += "";
+					break;
+			}
+		}
+		if(document.getElementById("message_notification").checked)
+			url+= "&disable_notification=true";
+		if(document.getElementById("message_markdown").checked)
+			url+= "&parse_mode=Markdown";
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function saveResult() {
+		document.getElementById("saved_result").innerHTML = document.getElementById("httpResult").innerHTML;
+	}
+	function preview() {
+		switch (document.getElementById("message_type").value) {
+			case "sendMessage":
+				document.getElementById("dyn_hint_inner").innerHTML = document.getElementById("message_body").value;
+				break;
+			case "sendPoll":
+				document.getElementById("dyn_hint_inner").innerHTML = document.getElementById("message_body").value;
+				break;
+			case "sendPhoto":
+				document.getElementById("dyn_hint_inner").src = document.getElementById("message_body").value;
+				document.getElementById("dyn_hint_caption").innerHTML = document.getElementById("message_optional").value;
+				break;
+			case "sendAudio":
+			case "sendDocument":
+				document.getElementById("dyn_hint_inner").src = document.getElementById("message_body").value;
+				break;
+			case "sendVideo":
+				document.getElementById("dyn_hint_inner").src = document.getElementById("message_body").value;
+				document.getElementById("dyn_hint_caption").innerHTML = document.getElementById("message_optional").value;
+				break;
+			case "sendAnimation":
+				document.getElementById("dyn_hint_inner").src = document.getElementById("message_body").value;
+				document.getElementById("dyn_hint_caption").innerHTML = document.getElementById("message_optional").value;
+				break;
+			case "sendSticker":
+			default:
+				document.getElementById("dyn_hint_inner").innerHTML = document.getElementById("message_body").value;
+				break;
+		}
+	}
+	function changeDetail() {
+		switch (document.getElementById("message_type").value) {
+			case "sendMessage":
+			case "sendPoll":
+				document.getElementById("message_detail").innerHTML = "String";
+				break;
+			case "sendPhoto":
+			case "sendAudio":
+			case "sendDocument":
+			case "sendVideo":
+			case "sendAnimation":
+				document.getElementById("message_detail").innerHTML = "HTTP URL";
+				break;
+			case "sendSticker":
+				document.getElementById("message_detail").innerHTML = "ID";
+				break;
+			default:
+				document.getElementById("message_detail").innerHTML = "HTTP URL";
+				break;
+		}
+		switch (document.getElementById("message_type").value) {
+			case "sendMessage":
+				document.getElementById("dyn_hints").innerHTML = "<div style=\"margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;\"><div style=\"display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;\">.</div><div style=\"display: inline-block;margin:0;padding: 5px;min-width:407px;min-height:80px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;\"><span style=\"color: #6464C1\">.</span><span id=\"dyn_hint_inner\"></span></div></div>";
+				break;
+			case "sendPoll":
+				document.getElementById("dyn_hints").innerHTML = "<div style=\"margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;\"><div style=\"display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;\">.</div><div style=\"display: inline-block;margin:0;padding: 5px;min-width:407px;min-height:80px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;\"><span style=\"color: #6464C1\">.</span><span id=\"dyn_hint_inner\"></span></div></div>";
+				break;
+			case "sendPhoto":
+				document.getElementById("dyn_hints").innerHTML = "<div style=\"margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;\"><div style=\"display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;\">.</div><div style=\"display: inline-block;margin:0;padding: 5px;min-width:407px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;\"><span style=\"color: #6464C1\">.</span><img id=\"dyn_hint_inner\" src=\"none\" style=\"margin: 0;padding: 0;width:400px;height: 300px;\"><br><span id=\"dyn_hint_caption\"></span></div></div>";
+				break;
+			case "sendAudio":
+			case "sendDocument":
+				document.getElementById("dyn_hints").innerHTML = "under construction";
+				break;
+			case "sendVideo":
+				document.getElementById("dyn_hints").innerHTML = "<div style=\"margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;\"><div style=\"display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;\">.</div><div style=\"display: inline-block;margin:0;padding: 5px;min-width:407px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;\"><span style=\"color: #6464C1\">.</span><video width=\"400px\" heigth=\"300px\" controls><source id=\"dyn_hint_inner\" src=\"none\" type=\"video/mp4\"></video><br><span id=\"dyn_hint_caption\"></span></div></div>";
+				break;
+			case "sendAnimation":
+				document.getElementById("dyn_hints").innerHTML = "<div style=\"margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;\"><div style=\"display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;\">.</div><div style=\"display: inline-block;margin:0;padding: 5px;min-width:407px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;\"><span style=\"color: #6464C1\">.</span><img id=\"dyn_hint_inner\" src=\"none\" style=\"margin: 0;padding: 0;width:400px;height: 300px;\"><br><span id=\"dyn_hint_caption\"></span></div></div>";
+				break;
+			case "sendSticker":
+				document.getElementById("dyn_hints").innerHTML = "nierautomata:<br><span style=\"margin:0;padding:0;\"><img onclick=\"setSticker('CAADAgADKAADLLH9BVtslXRWpCJyAg');\" src=\"image/s0.png\"> <img onclick=\"setSticker('CAADAgADKQADLLH9BShV3er_K360Ag');\" src=\"image/s1.png\"> <img onclick=\"setSticker('CAADAgADKgADLLH9BcwC2RIClSN2Ag');\" src=\"image/s2.png\"> <img onclick=\"setSticker('CAADAgADKwADLLH9BU57R3basdUZAg');\" src=\"image/s3.png\"> <img onclick=\"setSticker('CAADAgADLAADLLH9BeJAUpYL3SVqAg');\" src=\"image/s4.png\"> <img onclick=\"setSticker('CAADAgADLQADLLH9Bdjunmksk5d1Ag');\" src=\"image/s5.png\"> <img onclick=\"setSticker('CAADAgADLgADLLH9BRFNuhLnlsVSAg');\" src=\"image/s6.png\"> <img onclick=\"setSticker('CAADAgADLwADLLH9BVOIL0tRySUvAg');\" src=\"image/s7.png\"> <img onclick=\"setSticker('CAADAgADMAADLLH9BZAIJao19gq0Ag');\" src=\"image/s8.png\"> <img onclick=\"setSticker('CAADAgADMQADLLH9BZ-TdY3B73L5Ag');\" src=\"image/s9.png\"> <img onclick=\"setSticker('CAADAgADMgADLLH9BXfb6hVCLsZ2Ag');\" src=\"image/s10.png\"> <img onclick=\"setSticker('CAADAgADMwADLLH9BWmfPrQzZhfTAg');\" src=\"image/s11.png\"> <img onclick=\"setSticker('CAADAgADNAADLLH9Bfc91fMkdqQcAg');\" src=\"image/s12.png\"> <img onclick=\"setSticker('CAADAgADNQADLLH9BS5R6Py8Ca21Ag');\" src=\"image/s13.png\"></span><br>nier2b_by_Frier_bot:<br><span style=\"margin:0;padding:0;\"><img onclick=\"setSticker('CAADAgADAgADB64_Fj3wfWc0ZG-eAg');\" src=\"image/b0.png\"> <img onclick=\"setSticker('CAADAgADBAADB64_FldXHsXFXXuFAg');\" src=\"image/b1.png\"> <img onclick=\"setSticker('CAADAgADBQADB64_FjJuTqiEFGqbAg');\" src=\"image/b2.png\"> <img onclick=\"setSticker('CAADAgADBgADB64_FiUkh4hvhCl9Ag');\" src=\"image/b3.png\"> <img onclick=\"setSticker('CAADAgADBwADB64_FnUeKqEOVzHlAg');\" src=\"image/b4.png\"></span><br><input style=\"margin:0;width:98%\" id=\"sticker_name\" type=\"text\" placeholder=\"stickerpack\"><br><button onclick=\"getStickers();\" class=\"button\">Get Sticker Pack</button>";
+				break;
+			default:
+				document.getElementById("dyn_hints").innerHTML = "HTTP URL";
+				break;
+		}
+		switch (document.getElementById("message_type").value) {
+			case "sendMessage":
+				document.getElementById("optional_div").innerHTML = "";
+				break;
+			case "sendPoll":
+				document.getElementById("optional_div").innerHTML = "<label for=\"message_optional\" style=\"margin:0;padding:0;padding-left: 5px;\">Options (Array of Strings)</label><br><textarea id=\"message_optional\" type=\"text\" placeholder=\"&quot;option1&quot;,&quot;option2&quot;, ...\" style=\"margin:0;padding: 1;width:487px;height:40px;overflow-y: auto;\" oninput=\"preview();\"></textarea>";
+				break;
+			case "sendPhoto":
+				document.getElementById("optional_div").innerHTML = "<label for=\"message_optional\" style=\"margin:0;padding:0;padding-left: 5px;\">Caption</label><br><textarea id=\"message_optional\" type=\"text\" placeholder=\"options\" style=\"margin:0;padding: 1;width:487px;height:40px;overflow-y: auto;\" oninput=\"preview();\"></textarea>";
+				break;
+			case "sendAudio":
+			case "sendDocument":
+			case "sendVideo":
+			case "sendAnimation":
+				document.getElementById("optional_div").innerHTML = "<label for=\"message_optional\" style=\"margin:0;padding:0;padding-left: 5px;\">Caption</label><br><textarea id=\"message_optional\" type=\"text\" placeholder=\"options\" style=\"margin:0;padding: 1;width:487px;height:40px;overflow-y: auto;\" oninput=\"preview();\"></textarea>";
+				break;
+			case "sendSticker":
+			default:
+				document.getElementById("optional_div").innerHTML = "";
+				break;
+		}
+	}
+	function setSticker(sticker) {
+		document.getElementById("message_body").value = sticker;
+	}
+	function getStickers() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "getStickerSet?name=" + document.getElementById("sticker_name").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function getme() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "getMe";
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function getuserprofilephotos() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "getUserProfilePhotos?user_id=" + document.getElementById("f_input").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function kickUserChat() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "kickChatMember?chat_id=" + document.getElementById("f_input2").value;
+		url+= "&user_id=" + document.getElementById("f_input1").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function unbanUserChat() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "unbanChatMember?chat_id=" + document.getElementById("f_input2").value;
+		url+= "&user_id=" + document.getElementById("f_input1").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function setTitleChat() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "setChatTitle?chat_id=" + document.getElementById("f_input2").value;
+		url+= "&title=" + encodeURIComponent(document.getElementById("f_input1").value).replace(/'/g,"%27").replace(/"/g,"%22");
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function setDescChat() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "setChatDescription?chat_id=" + document.getElementById("f_input2").value;
+		url+= "&description=" + encodeURIComponent(document.getElementById("f_input1").value).replace(/'/g,"%27").replace(/"/g,"%22");
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function leaveChat() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "leaveChat?chat_id=" + document.getElementById("f_input2").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function getadmins() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= "getChatAdministrators?chat_id=" + document.getElementById("f_input").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function cr() {
+		localStorage.setItem("token",document.getElementById("token").value);
+		var url = "https://api.telegram.org/bot";
+		url+= document.getElementById("token").value;
+		url+= "/";
+		url+= document.getElementById("f_input3").value;
+		const http = new XMLHttpRequest();
+		http.onreadystatechange = function () {
+			if (http.readyState == 4) {
+				document.getElementById("httpResult").innerHTML = http.response;
+			}
+		}
+		http.open("GET",url)
+		http.send();
+	}
+	function footer(option) {
+		switch(option) {
+			case "pic":
+				document.getElementById("f_pic_top").className = "f_active";
+				document.getElementById("f_efun_top").className = "f_dis";
+				document.getElementById("f_kchat_top").className = "f_dis";
+				document.getElementById("f_cr_top").className = "f_dis";
+				document.getElementById("f_pic").style = "display:inline";
+				document.getElementById("f_efun").style = "display:none";
+				document.getElementById("f_kchat").style = "display:none";
+				document.getElementById("f_cr").style = "display:none";
+				break;
+			case "efun":
+				document.getElementById("f_pic_top").className = "f_dis";
+				document.getElementById("f_efun_top").className = "f_active";
+				document.getElementById("f_kchat_top").className = "f_dis";
+				document.getElementById("f_cr_top").className = "f_dis";
+				document.getElementById("f_pic").style = "display:none";
+				document.getElementById("f_efun").style = "display:inline";
+				document.getElementById("f_kchat").style = "display:none";
+				document.getElementById("f_cr").style = "display:none";
+				break;
+			case "kchat":
+				document.getElementById("f_pic_top").className = "f_dis";
+				document.getElementById("f_efun_top").className = "f_dis";
+				document.getElementById("f_kchat_top").className = "f_active";
+				document.getElementById("f_cr_top").className = "f_dis";
+				document.getElementById("f_pic").style = "display:none";
+				document.getElementById("f_efun").style = "display:none";
+				document.getElementById("f_kchat").style = "display:inline";
+				document.getElementById("f_cr").style = "display:none";
+				break;
+			case "cr":
+				document.getElementById("f_pic_top").className = "f_dis";
+				document.getElementById("f_efun_top").className = "f_dis";
+				document.getElementById("f_kchat_top").className = "f_dis";
+				document.getElementById("f_cr_top").className = "f_active";
+				document.getElementById("f_pic").style = "display:none";
+				document.getElementById("f_efun").style = "display:none";
+				document.getElementById("f_kchat").style = "display:none";
+				document.getElementById("f_cr").style = "display:inline";
+				break;
+			default:
+				break;
+		}
+	}
+	var switchInfoCheck = true;
+	function switchInfo() {
+		if(switchInfoCheck) {
+			document.getElementById("side_panel").innerHTML = "Text Formatting:<br>*bold text*<br>_italic text_<br>[inline URL](http://www.example.com/)<br>[inline mention of a user](tg://user?id=123456789)<br><br>editMessageText?chat_id=&amp;message_id=&amp;text=<br>editMessageCaption?chat_id=&amp;message_id=&amp;caption=<br>deleteMessage?chat_id=&amp;message_id=<br>";
+			switchInfoCheck = false;
+		} else {
+			document.getElementById("side_panel").innerHTML = "getChat?chat_id=<br>getChatMembersCount?chat_id=<br>getChatMember?chat_id=&amp;user_id=<br>setChatStickerSet?chat_id=&amp;sticker_set_name=<br>deleteChatStickerSet?chat_id=<br>restrictChatMember?chat_id=&amp;user_id=&amp;until_date=&amp;<br>exportChatInviteLink?chat_id=<br>setChatPhoto?chat_id=&amp;photo=[inputfile]<br>deleteChatPhoto?chat_id=<br>pinChatMessage?chat_id=&amp;message_id=<br>unpinChatMessage?chat_id=<br><br>getStickerSet?name=<br>uploadStickerFile?user_id=&amp;png_sticker=[InputFile]<br>createNewStickerSet?user_id&amp;name=&amp;title=&amp;png_sticker=[InputFile]&amp;emojis=<br>addStickerToSet?user_id&amp;name=&amp;png_sticker=[InputFile]&amp;emojis=<br>setStickerPositionInSet?sticker=&amp;position=<br>deleteStickerFromSet?sticker<br>";
+			switchInfoCheck = true;
+		}
+	}
+	var switchHintsCheck;
+	function switchHints() {
+		if(switchHintsCheck === undefined){
+			if(document.getElementById("right_side").style.display=="none")
+				switchHintsCheck = true;
+			else
+				switchHintsCheck = false;
+		}
+		if(switchHintsCheck) {
+			document.getElementById("right_side").style = "display:inline";
+			localStorage.setItem("hintsCheck","display:inline");
+			switchHintsCheck = false;
+		} else {
+			document.getElementById("right_side").style = "display:none";
+			localStorage.setItem("hintsCheck","display:none");
+			switchHintsCheck = true;
+		}
+	}
+	</script>
+<div class="main">
+	<h3 style="margin:2px;margin-left: 0px;padding-left: 14px;background-color: #F8F8FF;width: 986px;color: #2F2F2F">2B bot Control Panel.</h3><span style="margin-left:4px;">To send a message to specific user make an URL with the form below.</span><br>
+  <span style="margin-left:4px;">Bot Token: </span><input style="width:992px;margin: 0;" id="token" type="text" required placeholder="token" value="">
+  <table style="width: 100%;max-height: 400px;margin:0;padding:0;padding-top:10px;"><tr style="margin:0;"><td style="width:50%;margin:0;vertical-align: top;">
+  	<table style="width:100%;border-collapse: collapse;vertical-align: top;margin:0px;">
+		<tr style="margin: 0px;"><td><label for="message_type">Type</label></td>
+		<td style="border-left: 1px solid silver;"><label for="chat_id">Chat</label></td>
+		<td style="border-left: 1px solid silver;"><label for="message_body">Message (<span id="message_detail">String</span>)</label></td></tr>
+  	<tr style="margin-top: 0px;">
+  	<td style="margin: 0;padding: 0;width:70px;vertical-align: top;background-color: #F1F1FD;">
+  		<select id="message_type" onchange="changeDetail();" style="margin: 0;padding: 0;width:70px;">
+  			<option selected value="sendMessage">Text</option>
+  			<option value="sendPhoto">Photo</option>
+  			<!--<option value="sendAudio">Audio</option>
+  			<option value="sendDocument">Document</option>
+  			<option value="sendVideo">Video</option>-->
+  			<option value="sendAnimation">Animation</option>
+  			<option value="sendPoll">Poll</option>
+  			<option value="sendSticker">Sticker</option>
+  		</select>
+  	</td>
+  	<td style="border-left: 1px solid silver;margin: 0;padding: 0;width:70px;vertical-align: top;background-color: #F1F1FD;">
+  		<select id="chat_id" style="margin: 0;padding: 0;width:70px;">
+  			<option selected value="373272071">frier</option>
+  			<option value="352077409">azazol</option>
+  			<option value="389737332">alf</option>
+  			<option value="554095158">salem</option>
+  			<option value="294933200">surikn</option>
+  			<option value="283547448">ussr agent</option>
+  			<option value="-1001409516336">tony_chat</option>
+  			<option value="-1001136242429">pomoi</option>
+			<option value="-456072834">slusar</option>
+  		</select>
+  	</td>
+  	<td style="border-left: 1px solid silver;margin: 0;padding: 0;vertical-align: top;background-color: #F1F1FD;">
+		<textarea id="message_body" type="text" placeholder="message" required style="margin:0;padding: 1;width:345px;height:40px;overflow-y: auto;"  oninput="preview();"></textarea>
+  	</td>
+  	</tr>
+  	</table>
+  	<div id="optional_div" style="margin:0;padding: 0"></div>
+  	<br>
+  	<label class="checkbox_container" for="message_notification">Disable Notification<input type="checkbox" id="message_notification" style="border:none;"><span class="checkmark"></span></label><br><label class="checkbox_container" for="message_markdown">Markdown<input type="checkbox" id="message_markdown" style="border:none;"><span class="checkmark"></span></label><br>
+  <button class="button" onclick="makeUrl();">Execute</button><br>
+  <span id="httpResult" style="margin:0;padding:0;display:block;width:495px;height:150px;overflow: auto;background-color: #F1F1Fd;"></span>
+  <button class="button" onclick="saveResult()">Save Result</button>
+  </td>
+  <td style="width:50%;overflow-y:auto;height: 450px;margin:0;padding: 0;vertical-align: top;">
+  	Message Preview:<br>
+  	<div id="dyn_hints" style="width:100%;margin:0;padding: 0;vertical-align: top;"><div style="margin:0;padding: 0;width:100%;height: 80px;vertical-align: text-top;"><div style="display:inline-block;padding: 0;height: 80px;width:80px;background-image: url(image/2b.jpg);background-size: 80px 110px; border-radius: 40px;color: white;">.</div><div style="display: inline-block;margin:0;padding: 5px;min-width:407px;min-height:80px;height:auto;background-color: #6464C1;border-radius: 10px;border-bottom-left-radius: 0px;"><span style="color: #6464C1">.</span><span id="dyn_hint_inner"></span></div></div></div>
+  </td></tr></table>
+  Encoder<br>
+  <textarea id="encoder" style="width:992px;height:200px;margin:0"></textarea><br>
+  <button class="button" onclick="encode();">Encode</button>
+  <div style="margin:0;padding-right: 5px;background-color: #F1F1FD;height: 75px;width:995px;;position: absolute;bottom: 0;">
+  <span id="f_pic_top" class="f_active" onclick="footer('pic')">Pictures</span><span id="f_efun_top" class="f_dis" onclick="footer('efun')">Extra Functions</span><span id="f_kchat_top" class="f_dis" onclick="footer('kchat')">Chat Actions</span><span id="f_cr_top" class="f_dis" style="width:527px;" onclick="footer('cr')">Custom Request</span><br>
+  <span id="f_pic">Collections: <a href="https://www.deviantart.com/dnxpunk/favourites/71947070/2B-Nier-Automata" target="_blank">dnxpunk</a>, <a href="https://www.deviantart.com/freekm1998/favourites/75926228/Nier-Automata" target="_blank">freekm1998</a><br>
+  Random pics: <a href="https://www.deviantart.com/badriel/art/Casual-2b-769856953" target="_blank">Casual 2B</a>, <a href="https://www.deviantart.com/piumike/art/Nier-2b-785437762" target="_blank">2B Portrait</a>, <a href="https://www.deviantart.com/kheilahirai/art/2B-770031684" target="_blank">2B by Kheila Hirai</a>, <a href="https://www.deviantart.com/ayvie-g/art/2B-Amusement-Park-718814555" target="_blank">2B Amusement Park</a>, <a href="https://www.deviantart.com/ksulolka/art/2b-nsfw-opt-739185782" target="_blank">2B Lingerie</a>, <a href="https://www.deviantart.com/moshimoshibe/art/goshujinsama-773241427" target="_blank">2B Portrait (2)</a>, <a href="https://cs8.pikabu.ru/post_img/big/2017/12/23/10/151404809811495581.jpg" target="_blank">2B Swimsuit</a>, <a href="https://www.deviantart.com/alesuyin/art/2B-766288848" target="_blank">2B Lingerie(2)</a></span>
+  <span id="f_efun" style="display:none"><br><input id="f_input" type="text" style="border: 1px solid #A1A1FD;"><span class="button" onclick="getme();">Get Me</span><span class="button" onclick="getuserprofilephotos();">Get User Profile Photos</span><span class="button" onclick="getadmins();">Get Chat Admins</span></span>
+  <span id="f_kchat" style="display:none"><br><input id="f_input1" type="text" style="border: 1px solid #A1A1FD;" placeholder="user_id"><input id="f_input2" type="text" style="border: 1px solid #A1A1FD;" placeholder="chat_id"><span class="button" onclick="kickUserChat();">kick</span><span class="button" onclick="unbanUserChat();">unban</span><span class="button" onclick="setTitleChat();">Set Title</span><span class="button" onclick="setDescChat();">Set Desc</span><span class="button" onclick="leaveChat();">Leave</span></span>
+  <span id="f_cr" style="display:none"><br><input id="f_input3" type="text" style="border: 1px solid #A1A1FD;width:835px;" placeholder="request"><span class="button" onclick="cr();">Execute</span></span>
+  </div>
+  <div id="saved_result" style="position:absolute;top:20px;left:20px;width:400px;max-height:95vh;overflow:auto"></div><span id="right_side" style="display:none;">
+  <div style="position:absolute;top:20px;right:20px;width:400px;height:500px;overflow:auto">
+  	users: (me - 835606980)<br>
+  	frier - 373272071<br>
+  	azazol - 352077409<br>
+  	alf - 389737332<br>
+  	salem - 554095158<br>
+  	surikn - 294933200<br>
+  	ussr agent - 283547448<br>
+ 	<br>
+ 	chats:<br>
+ 	tony - -1001409516336<br>
+ 	pomoi - -1001136242429<br>
+	slusar - -456072834<br>
+  </div>
+  <div style="position:absolute;bottom:20px;right:20px;width:400px;height:400px;overflow:auto">
+   <button class="button" onclick="switchInfo()">Switch Info</button><br>
+   <span id="side_panel">
+    getChat?chat_id=<br>
+  	getChatMembersCount?chat_id=<br>
+  	getChatMember?chat_id=&amp;user_id=<br>
+  	setChatStickerSet?chat_id=&amp;sticker_set_name=<br>
+  	deleteChatStickerSet?chat_id=<br>
+  	restrictChatMember?chat_id=&amp;user_id=&amp;until_date=&amp;<br>
+  	exportChatInviteLink?chat_id=<br>
+  	setChatPhoto?chat_id=&amp;photo=[inputfile]<br>
+  	deleteChatPhoto?chat_id=<br>
+  	pinChatMessage?chat_id=&amp;message_id=<br>
+  	unpinChatMessage?chat_id=<br><br>
+  	getStickerSet?name=<br>
+  	uploadStickerFile?user_id=&amp;png_sticker=[InputFile]<br>
+  	createNewStickerSet?user_id&amp;name=&amp;title=&amp;png_sticker=[InputFile]&amp;emojis=<br>
+  	addStickerToSet?user_id&amp;name=&amp;png_sticker=[InputFile]&amp;emojis=<br>
+  	setStickerPositionInSet?sticker=&amp;position=<br>
+  	deleteStickerFromSet?sticker<br>
+  	</span>
+  </div></span>
+  <button class="button" style="position:absolute;top:25px;left:60vw;" onclick="switchHints()">Display Hints</button>
+</div>
+</body>
+
+</html>
